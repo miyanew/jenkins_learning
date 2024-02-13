@@ -3,9 +3,10 @@ pipeline {
     stages {
         stage('build') {
             steps {
-                script {
-                    docker.image('ruby:3.3.0-alpine3.19').inside {
-                        sh 'ruby --version'
+                sh 'ruby --version'
+                sh 'which docker'
+                sh 'uname -a;id;pwd'
+                sh 'ls -l'
                     }
                 }
             }
