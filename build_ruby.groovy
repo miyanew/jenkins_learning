@@ -8,8 +8,6 @@ pipeline {
                 sh 'uname -a;id;pwd'
                 sh 'ls -l'
                     }
-                }
             }
         }
     }
-}
