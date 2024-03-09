@@ -1,0 +1,62 @@
+
+def shell_cmds(){
+    def cmd_list = """\
+echo 'Hello World'
+uname -n; id
+"""
+    return cmd_list.readLines()
+}
+
+def execute_with_prompt(cmd){
+    return """\
+> ${cmd}
+${sh(script: "${cmd}", returnStdout: true).trim()}
+"""
+}
+
+def echo_readme(cmd){
+    echo """\
+このJenkinsジョブは以下のコマンドの実行結果をテキストファイルで取得します
+
+---コマンド---
+${cmd.join("\n")}
+"""
+}
+
+pipeline {
+    agent any
+    stages {
+        stage('ReadMe') {
+            steps {
+                script{
+                    echo_readme(shell_cmds())
+                }
+            }
+        }
+
+        stage('Run') {
+            steps {
+                input message: "ReadMeのLogsを読んでね # ${env.BUILD_NUMBER}",
+                    ok: '読んだのですすむ'
+
+                script {
+                    def stdout = ""
+                    shell_cmds().each { command ->
+                        stdout += execute_with_prompt(command)
+                    }
+                    writeFile file: 'output.txt', text: stdout
+                    archiveArtifacts artifacts: 'output.txt', fingerprint: true
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo currentBuild.result
+        }
+        cleanup {
+            cleanWs()
+        }
+    }
+}
